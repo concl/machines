@@ -2,3 +2,7 @@
 .vscode/
 .data/
 .trash/
+
+*.csv
+*.log
+*.parquet
