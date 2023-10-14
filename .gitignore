@@ -1,7 +1,7 @@
 .venv/
 .vscode/
-.data/
-.trash/
+data/
+trash/
 
 *.csv
 *.log

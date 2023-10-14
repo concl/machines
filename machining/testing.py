@@ -7,3 +7,5 @@ print(data["code"][0])
 
 print(data.head())
 
+print(data.tail())
+
