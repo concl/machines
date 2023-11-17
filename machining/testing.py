@@ -1,11 +1,5 @@
+年齢 = 30
+名前 = "太郎"
 
-import pandas as pd
-
-data = pd.read_parquet("machining/0000.parquet")
-
-print(data["code"][0])
-
-print(data.head())
-
-print(data.tail())
+print(名前, "さんは", 年齢, "歳です。")
 
