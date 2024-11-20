@@ -6,8 +6,6 @@ data/
 trash/
 debug/
 
-
-
 *.csv
 *.log
 *.parquet
