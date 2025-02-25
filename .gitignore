@@ -9,3 +9,4 @@ debug/
 *.csv
 *.log
 *.parquet
+*.pt
