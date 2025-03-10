@@ -10,3 +10,5 @@ debug/
 *.log
 *.parquet
 *.pt
+*.safetensors
+*.jpg
