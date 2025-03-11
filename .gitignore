@@ -12,3 +12,4 @@ debug/
 *.pt
 *.safetensors
 *.jpg
+*.env
