@@ -1,0 +1,13 @@
+
+# PyTorch should be installed with the correct CUDA version
+# at this link: https://pytorch.org/get-started/locally/
+
+einops
+tqdm
+numpy
+pandas
+matplotlib
+seaborn
+plotly
+
+
