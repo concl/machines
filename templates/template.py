@@ -6,6 +6,7 @@ import torch.optim as optim
 from torch.utils.data import Dataset, DataLoader
 
 from einops import rearrange
+from tqdm.auto import tqdm
 
 import numpy as np
 import pandas as pd

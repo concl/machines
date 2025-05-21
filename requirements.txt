@@ -11,5 +11,6 @@ seaborn
 plotly
 jupyter
 jupyterlab
+scikit-learn
 
 
