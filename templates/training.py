@@ -6,18 +6,18 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data import Dataset, DataLoader
 
-# Utils
+# Tools
 from einops import rearrange
 from tqdm.auto import tqdm
 
-# Standard imports
 import numpy as np
 import pandas as pd
 
-# Plotting
+# Visualisation
 import matplotlib.pyplot as plt
 import seaborn as sns
 import plotly.express as px
+
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
