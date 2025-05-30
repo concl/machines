@@ -2,6 +2,14 @@
 use pyo3::prelude::*;
 use pyo3::types::PyString;
 
+// Base trait for all tokenizers
+/// This trait defines the basic functionality for a tokenizer
+trait Tokenizer {
+    fn from_pretrained(path: &str) -> Self where Self: Sized;
+    fn save_trained(&self, path: &str);
+    fn tokenize(&self, text: &str) -> Vec<String>;
+}
+
 /// Tokenizer object to tokenize Python strings into a list of characters
 #[pyclass]
 pub struct CharacterLevelTokenizer {}
@@ -20,33 +28,6 @@ impl CharacterLevelTokenizer {
         Ok(tokens)
     }
 }
-
-#[pyclass]
-pub struct SentencePieceTokenizer {
-    #[pyo3(get)]
-    pub model_path: String,
-    pub vocab: HashMap<String, i64>,
-    pub unk_token: String,
-    pub unk_token_id: i64,
-    pub pad_token: String,
-    pub pad_token_id: i64,
-}
-
-// #[pymethods]
-// impl SentencePieceTokenizer {
-//     #[new]
-//     pub fn new(model_path: String) -> Self {
-//         SentencePieceTokenizer { model_path }
-//     }
-
-//     /// Takes a Python string and returns a list of tokens
-//     pub fn tokenize(&self, text: &PyString) -> PyResult<Vec<String>> {
-//         // todo
-
-
-//         Ok(vec![]);
-//     }
-// }
 
 /// A Python module implemented in Rust.
 #[pymodule(rust_tokenizer)]
