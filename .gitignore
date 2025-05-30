@@ -5,6 +5,7 @@
 data/
 trash/
 debug/
+workspace/
 
 *.csv
 *.log
