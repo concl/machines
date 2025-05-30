@@ -1,11 +1,17 @@
-
 # PyTorch should be installed with the correct CUDA version
 # at this link: https://pytorch.org/get-started/locally/
+# For example, for CUDA 12.8, use the following command:
+# pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
 
+transformers
+datasets
+accelerate
 einops
 tqdm
 numpy
+scipy
 pandas
+polars
 matplotlib
 seaborn
 plotly
