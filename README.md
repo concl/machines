@@ -14,3 +14,13 @@ Then run the following command to install the dependencies
 ```
 pip install -r requirements.txt
 ```
+
+## Useful resources and documentation:
+
+- PyTorch: https://docs.pytorch.org/docs/stable/pytorch-api.html 
+- Hugging Face transformers: https://huggingface.co/docs/transformers/model_doc/auto 
+- sklearn: https://scikit-learn.org/stable/api/index.html
+- plt:
+    - Docs: https://matplotlib.org/stable/api/pyplot_summary.html
+    - Gallery: https://matplotlib.org/stable/gallery/index.html
+- pandas: https://pandas.pydata.org/docs/reference/index.html#api

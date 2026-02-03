@@ -27,11 +27,9 @@ def train_model(model, train_loader, valid_loader=None, epochs=10, lr=1e-4,
         dict: Dictionary containing the trained model and lists of training and validation losses.
     """
 
-    # Select device automatically if not provided
     device = device or ('cuda' if torch.cuda.is_available() else 'cpu')
     model.to(device)
-
-    # Set defaults if not explicitly provided
+    
     optimizer = optimizer or optim.Adam(model.parameters(), lr=lr)
     criterion = criterion or nn.CrossEntropyLoss(ignore_index=-1)
     scheduler = scheduler or optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=3)
