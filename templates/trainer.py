@@ -117,7 +117,7 @@ class TrainingArguments:
 
     lr: float = 1e-4
     weight_decay: float = 1e-5
-    optimizer: str = "Adam"
+    optimizer: str = "AdamW"
     criterion: str = "CrossEntropyLoss"
     scheduler: str = "ReduceLROnPlateau"
     epochs: int = 10
