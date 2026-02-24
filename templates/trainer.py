@@ -17,15 +17,14 @@ class Trainer:
         device = self.args.device or ("cuda" if torch.cuda.is_available() else "cpu")
         self.model.to(device)
 
-        optimizer = optim.AdamW(
+        optimizer = self.args.optimizer_class(
             self.model.parameters(),
             lr=self.args.lr,
             weight_decay=self.args.weight_decay,
+            **(self.args.optimizer_kwargs or {})
         )
-        criterion = nn.CrossEntropyLoss(ignore_index=-1)
-        scheduler = optim.lr_scheduler.ReduceLROnPlateau(
-            optimizer, patience=3
-        )
+        criterion = self.args.criterion
+        scheduler = self.args.scheduler(optimizer, patience=3)
 
         batch_log = self.args.batch_log
 
@@ -98,11 +97,12 @@ class Trainer:
                 scheduler.step(avg_val_loss)
                 self.model.train()
             
-            # ===== Save model checkpoint after each epoch =====
-            torch.save(
-                self.model.state_dict(),
-                os.path.join(self.args.save_path, f"model_epoch_{epoch+1}.pt"),
-            )
+            # ===== Save model checkpoint after n epochs =====
+            if (epoch + 1) % self.args.save_every_n_epochs == 0:
+                torch.save(
+                    self.model.state_dict(),
+                    os.path.join(self.args.save_path, f"model_epoch_{epoch+1}.pt"),
+                )
         
         return {
             "model": self.model,
@@ -117,10 +117,12 @@ class TrainingArguments:
 
     lr: float = 1e-4
     weight_decay: float = 1e-5
-    optimizer: str = "Adam"
-    criterion: str = "CrossEntropyLoss"
-    scheduler: str = "ReduceLROnPlateau"
+    optimizer_class: type = optim.AdamW
+    optimizer_kwargs: dict = None
+    criterion: nn.Module = nn.CrossEntropyLoss(ignore_index=-1)
+    scheduler: optim.lr_scheduler._LRScheduler = optim.lr_scheduler.ReduceLROnPlateau
     epochs: int = 10
     batch_log: int = 100
     device: str = None
     save_path: str = "checkpoints/"
+    save_every_n_epochs: int = 1
