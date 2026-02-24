@@ -12,10 +12,14 @@ class TrainData(Dataset):
         train_df: pd.DataFrame,
         target: str,
         categorical_cols: list = None,
-        encode_labels: bool = False
+        encode_labels: bool = False,
+        drop_columns = None
     ): 
 
         self.X = train_df.drop(columns=[target])
+        if drop_columns:
+            self.X.drop(columns=drop_columns, inplace=True)
+
         self.y = train_df[target]
         self.target = target
         self.categorical_cols = categorical_cols
@@ -51,8 +55,11 @@ class TrainData(Dataset):
         return torch.tensor(self.X.iloc[idx].values, dtype=torch.float32), torch.tensor(self.y[idx], dtype=torch.float32)
     
     def transform(self, new_df: pd.DataFrame):
+        if self.target in new_df.columns:
+            X = new_df.drop(columns=[self.target])
+        else:
+            X = new_df.copy()
 
-        X = new_df.drop(columns=[self.target])
         if self.enc is not None:
             encoded_x = self.enc.transform(X[self.categorical_cols])
             encoded_x_df = pd.DataFrame(
@@ -68,10 +75,20 @@ class TrainData(Dataset):
                 axis=1
             )
         
-        if self.label_enc is not None:
-            y = self.label_enc.transform(new_df[self.target])
-        else:
-            y = new_df[self.target]
+        y = None
+
+        if self.target in new_df.columns:
+            if self.label_enc is not None:
+                y = self.label_enc.transform(new_df[self.target])
+            else:
+                y = new_df[self.target]
         
-        return X, y
+        return X, y if y is not None else X
+
+    def inverse_transform_labels(self, encoded_labels):
+        if self.label_enc is not None:
+            return self.label_enc.inverse_transform(encoded_labels)
+        else:
+            raise "Label Encoder is not initialized, cannot inverse transform labels"
+        
     
