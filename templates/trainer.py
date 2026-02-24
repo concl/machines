@@ -98,7 +98,7 @@ class Trainer:
                 self.model.train()
             
             # ===== Save model checkpoint after n epochs =====
-            if (epoch + 1) % self.args.save_every_n_epochs == 0:
+            if self.args.save_every_n_epochs != 0 and (epoch + 1) % self.args.save_every_n_epochs == 0:
                 torch.save(
                     self.model.state_dict(),
                     os.path.join(self.args.save_path, f"model_epoch_{epoch+1}.pt"),
@@ -125,4 +125,4 @@ class TrainingArguments:
     batch_log: int = 100
     device: str = None
     save_path: str = "checkpoints/"
-    save_every_n_epochs: int = 1
+    save_every_n_epochs: int = 1 # set to 0 to disable saving checkpoints
