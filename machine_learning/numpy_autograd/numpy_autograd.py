@@ -1,7 +1,17 @@
 
 import numpy as np
 
-class AutoGradFunction:
+def unbroadcast(grad: np.ndarray, target_shape: tuple) -> np.ndarray:
+    """Sum grad over axes that were broadcasted to match target_shape."""
+    while len(grad.shape) > len(target_shape):
+        grad = grad.sum(axis=0)
+    
+    for i, dim in enumerate(target_shape):
+        if dim == 1:
+            grad = grad.sum(axis=i, keepdims=True)
+    return grad
+
+class AutogradFunction:
     @staticmethod
     def forward(ctx, *args):
         raise NotImplementedError
@@ -11,19 +21,20 @@ class AutoGradFunction:
         raise NotImplementedError
 
 
-class AddFunction(AutoGradFunction):
+class AddFunction(AutogradFunction):
     @staticmethod
     def forward(ctx, a, b):
+        ctx.save_for_backward(a.shape, b.shape)
         return a + b
     
     @staticmethod
     def backward(ctx, grad_output):
+        a_shape, b_shape = ctx.saved_tensors
+        grad_output_a = unbroadcast(grad_output, a_shape)
+        grad_output_b = unbroadcast(grad_output, b_shape)
+        return grad_output_a, grad_output_b
 
-        # The derivative of a + b with respect to a is 1,
-        # and with respect to b is also 1
-        return grad_output, grad_output
-
-class MulFunction(AutoGradFunction):
+class MulFunction(AutogradFunction):
     @staticmethod
     def forward(ctx, a, b):
         ctx.save_for_backward(a, b)
@@ -35,9 +46,12 @@ class MulFunction(AutoGradFunction):
         # The derivative of a * b with respect to a is b, 
         # and with respect to b is a
         a, b = ctx.saved_tensors
-        return grad_output * b, grad_output * a
+        grad_output_a = unbroadcast(grad_output * b, a.shape)
+        grad_output_b = unbroadcast(grad_output * a, b.shape)
+
+        return grad_output_a, grad_output_b
     
-class MatMul(AutoGradFunction):
+class MatMul(AutogradFunction):
     @staticmethod
     def forward(ctx, a, b):
         ctx.save_for_backward(a, b)
@@ -46,16 +60,20 @@ class MatMul(AutoGradFunction):
     @staticmethod
     def backward(ctx, grad_output):
 
-        # The derivative of a_ij with respect to the output is b_jk,
-        # and the derivative of b_jk with respect to the output is a_ij
+        # The derivative of a_ij with respect to an element c_ik in the output is is b_jk,
+        # and the derivative of b_jk with respect to an element c_ik in the output  is a_ij
         # Using the chain rule, we get the partial for a_ij as:
-        # grad_output_ik * b_jk and for b_jk as a_ij * grad_output_ik
+        # grad_output_ik * b_jk (summed over k) and for b_jk as a_ij * grad_output_ik (summed over i)
         a, b = ctx.saved_tensors
-        grad_a = grad_output @ b.T
-        grad_b = a.T @ grad_output
+
+        a_T = np.swapaxes(a, -1, -2)
+        b_T = np.swapaxes(b, -1, -2)
+
+        grad_a = np.matmul(grad_output, b_T)
+        grad_b = np.matmul(a_T, grad_output)
         return grad_a, grad_b
     
-class ReLU(AutoGradFunction):
+class ReLU(AutogradFunction):
     @staticmethod
     def forward(ctx, x):
         ctx.save_for_backward(x)
@@ -67,7 +85,7 @@ class ReLU(AutoGradFunction):
         grad_input = grad_output * (x > 0).astype(x.dtype)
         return grad_input
 
-class CrossEntropyLoss(AutoGradFunction):
+class CrossEntropyLoss(AutogradFunction):
     @staticmethod
     def forward(ctx, logits, labels):
         # Compute softmax probabilities
@@ -91,7 +109,7 @@ class CrossEntropyLoss(AutoGradFunction):
         
         return grad_logits, None  # No gradient for labels
 
-class AutoGradContext:
+class AutogradContext:
     def __init__(self):
         self.saved_tensors = None
     
@@ -104,13 +122,18 @@ class Node:
     Each node wraps an AutoGradFunction and holds the context 
     and references to input tensors for backward traversal."""
 
-    def __init__(self, function: AutoGradFunction, ctx: AutoGradContext, inputs: list):
-        self.function = function    # The AutoGradFunction class (e.g. AddFunction)
+    def __init__(self, function: AutogradFunction, ctx: AutogradContext, inputs: list):
+        self.function = function    # The AutogradFunction class (e.g. AddFunction)
         self.ctx = ctx              # Context holding saved tensors
         self.inputs = inputs        # List of input Tensors (for graph traversal)
 
     def backward(self, grad_output):
-        return self.function.backward(self.ctx, grad_output)
+        grad_output = self.function.backward(self.ctx, grad_output)
+        for i, input_tensor in enumerate(self.inputs):
+            if input_tensor.requires_grad:
+                input_tensor.backward(grad_output[i] if isinstance(grad_output, tuple) else grad_output)
+        
+        return grad_output
 
 
 class Tensor:
@@ -122,5 +145,18 @@ class Tensor:
         self.requires_grad = requires_grad
         self.grad = None            # Accumulated gradient
         self.grad_fn = grad_fn      # Node that produced this tensor (None for leaves)
-
     
+    def backward(self, grad_output=None):
+        if self.grad_fn is not None:
+            if grad_output is None:
+                grad_output = np.ones_like(self.data)
+            grad_input = self.grad_fn.backward(grad_output)
+            if self.requires_grad:
+                self.grad = grad_input
+            # Propagate gradients backward through the graph
+            for input_tensor in self.grad_fn.inputs:
+                input_tensor.backward(grad_input)
+        else:
+            # If no grad_fn, this is a leaf tensor and no backward pass is needed
+            if self.requires_grad and grad_output is not None:
+                self.grad = grad_output
