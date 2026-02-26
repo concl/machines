@@ -13,12 +13,17 @@ class TrainData(Dataset):
         target: str,
         categorical_cols: list = None,
         encode_labels: bool = False,
-        drop_columns = None
+        drop_columns = None,
+        normalize_columns: list = None
     ): 
 
         self.X = train_df.drop(columns=[target])
         if drop_columns:
             self.X.drop(columns=drop_columns, inplace=True)
+
+        if normalize_columns is not None:
+            self.scaler = StandardScaler()
+            self.X[normalize_columns] = self.scaler.fit_transform(self.X[normalize_columns])
 
         self.y = train_df[target]
         self.target = target
@@ -90,5 +95,30 @@ class TrainData(Dataset):
             return self.label_enc.inverse_transform(encoded_labels)
         else:
             raise "Label Encoder is not initialized, cannot inverse transform labels"
-        
+
+
+class DFDataset(Dataset):
+    """
+    Torch Dataset wrapper for a pandas DataFrame
+    """
+    def __init__(self, X: pd.DataFrame, y: pd.Series, normalize_columns: list = None):
+        self.X = X.copy()
+        self.y = y.copy()
+        self.normalize_columns = normalize_columns
+        self.scaler = None
+
+        if normalize_columns is not None:
+            self.scaler = StandardScaler()
+            self.X[normalize_columns] = self.scaler.fit_transform(self.X[normalize_columns])
+
+    def __len__(self):
+        return len(self.X)
     
+    def __getitem__(self, idx):
+        return torch.tensor(self.X.iloc[idx].values, dtype=torch.float32), torch.tensor(self.y.iloc[idx], dtype=torch.float32)
+
+    def transform(self, X_test: pd.DataFrame):
+        if self.scaler is not None:
+            X_test = X_test.copy()
+            X_test[self.normalize_columns] = self.scaler.transform(X_test[self.normalize_columns])
+        return X_test
