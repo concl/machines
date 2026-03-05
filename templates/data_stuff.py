@@ -4,7 +4,16 @@ from template import *
 
 class TrainData(Dataset):
     """
-    Dataset class for training data from a pandas DataFrame.
+    PyTorch Dataset class for training data from a pandas DataFrame which includes a target column.
+    Handles categorical encoding, label encoding, normalization, and dropping specified columns.
+
+    Args:
+        train_df (pd.DataFrame): The training DataFrame.
+        target (str): The name of the target column.
+        categorical_cols (list, optional): List of categorical column names. Defaults to None.
+        encode_labels (bool, optional): Whether to encode labels. Defaults to False.
+        drop_columns (list, optional): List of columns to drop. Defaults to None.
+        normalize_columns (list, optional): List of columns to normalize. Defaults to None.
     """
 
     def __init__(
@@ -100,6 +109,11 @@ class TrainData(Dataset):
 class DFDataset(Dataset):
     """
     Torch Dataset wrapper for a pandas DataFrame
+
+    Args:
+        X (pd.DataFrame): The feature DataFrame.
+        y (pd.Series): The target Series.
+        normalize_columns (list, optional): List of columns to normalize. Defaults to None.
     """
     def __init__(self, X: pd.DataFrame, y: pd.Series, normalize_columns: list = None):
         self.X = X.copy()
