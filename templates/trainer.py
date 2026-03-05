@@ -28,11 +28,9 @@ class Trainer:
 
         batch_log = self.args.batch_log
 
-        # List to store all training losses for each batch log
-        all_train_losses = []
-
-        # List to store average training loss for each epoch
-        train_losses, valid_losses = [], []
+        
+        all_train_losses = [] # List to store all training losses for each batch log
+        train_losses, valid_losses = [], [] # List to store average training loss for each epoch
 
         os.makedirs(self.args.save_path, exist_ok=True)
 
@@ -48,7 +46,7 @@ class Trainer:
             curr_accumulated_loss = 0.0
             total_train_loss = 0.0
 
-            # ===== Training loop =====
+            # Training Loop
             for batch, (inputs, targets) in pbar:
 
                 inputs, targets = inputs.to(device), targets.to(device)
@@ -68,7 +66,7 @@ class Trainer:
                         batch=batch, loss=curr_accumulated_loss / batch_log
                     )
 
-                    # Log average loss for the batch and reset accumulated loss
+                    # log average loss for the batch and reset accumulated loss
                     all_train_losses.append(curr_accumulated_loss / batch_log)
                     curr_accumulated_loss = 0.0
 
@@ -77,7 +75,7 @@ class Trainer:
             train_losses.append(avg_train_loss)
             print(f"Epoch {epoch+1} Training Loss: {avg_train_loss:.4f}")
 
-            # ===== Validation loop =====
+            # Validation Loop
             if valid_loader is not None:
                 self.model.eval()
                 total_val_loss = 0.0
@@ -97,7 +95,7 @@ class Trainer:
                 scheduler.step(avg_val_loss)
                 self.model.train()
             
-            # ===== Save model checkpoint after n epochs =====
+            # Save Model Checkpoint
             if self.args.save_every_n_epochs != 0 and (epoch + 1) % self.args.save_every_n_epochs == 0:
                 torch.save(
                     self.model.state_dict(),
