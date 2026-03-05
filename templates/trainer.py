@@ -119,7 +119,7 @@ class TrainingArguments:
     optimizer_kwargs: dict = None
     criterion: nn.Module = nn.CrossEntropyLoss(ignore_index=-1)
     scheduler: optim.lr_scheduler._LRScheduler = optim.lr_scheduler.ReduceLROnPlateau
-    epochs: int = 10
+    epochs: int = 1
     batch_log: int = 100
     device: str = None
     save_path: str = "checkpoints/"
