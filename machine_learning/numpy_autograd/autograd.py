@@ -73,7 +73,7 @@ class MatMul(AutogradFunction):
         grad_b = np.matmul(a_T, grad_output)
         return grad_a, grad_b
     
-class ReLU(AutogradFunction):
+class ReLUFunction(AutogradFunction):
     @staticmethod
     def forward(ctx, x):
         ctx.save_for_backward(x)
@@ -86,7 +86,7 @@ class ReLU(AutogradFunction):
         return grad
 
 
-class CrossEntropyLoss(AutogradFunction):
+class CrossEntropyLossFunction(AutogradFunction):
     @staticmethod
     def forward(ctx, logits, labels):
         # Compute softmax probabilities
@@ -137,6 +137,7 @@ class AutogradNode:
         return grad_output
 
 
+
 class Tensor:
     """A wrapper around numpy arrays that tracks the computation graph
     for automatic differentiation."""
@@ -144,8 +145,8 @@ class Tensor:
     def __init__(self, data, requires_grad=False, grad_fn: AutogradNode = None, dtype=np.float32):
         self.data = np.array(data, dtype=dtype)
         self.requires_grad = requires_grad
-        self.grad = None            # Accumulated gradient
-        self.grad_fn = grad_fn      # Node that produced this tensor (None for leaves)
+        self.grad = None          # Accumulated gradient
+        self.grad_fn = grad_fn    # Node that produced this tensor (None for leaves)
     
     def backward(self, grad_output=None):
         if self.grad_fn is not None:
@@ -161,3 +162,37 @@ class Tensor:
             # If no grad_fn, this is a leaf tensor and no backward pass is needed
             if self.requires_grad and grad_output is not None:
                 self.grad = grad_output
+        
+    def __add__(self, other):
+        if isinstance(other, Tensor):
+            ctx = AutogradContext()
+            result_data = AddFunction.forward(ctx, self.data, other.data)
+            grad_fn = AutogradNode(AddFunction, ctx, [self, other])
+            return Tensor(result_data, requires_grad=self.requires_grad or other.requires_grad, grad_fn=grad_fn)
+        else:
+            return NotImplemented
+    
+    def __mul__(self, other):
+        if isinstance(other, Tensor):
+            ctx = AutogradContext()
+            result_data = MulFunction.forward(ctx, self.data, other.data)
+            grad_fn = AutogradNode(MulFunction, ctx, [self, other])
+            return Tensor(result_data, requires_grad=self.requires_grad or other.requires_grad, grad_fn=grad_fn)
+        else:
+            return NotImplemented
+    
+    def __matmul__(self, other):
+        if isinstance(other, Tensor):
+            return matmul(self, other)
+        else:
+            return NotImplemented
+    
+    def __getitem__(self, key):
+        return Tensor(self.data[key], requires_grad=self.requires_grad)
+
+
+def matmul(a: Tensor, b: Tensor) -> Tensor:
+    ctx = AutogradContext()
+    result_data = MatMul.forward(ctx, a.data, b.data)
+    grad_fn = AutogradNode(MatMul, ctx, [a, b])
+    return Tensor(result_data, requires_grad=a.requires_grad or b.requires_grad, grad_fn=grad_fn)

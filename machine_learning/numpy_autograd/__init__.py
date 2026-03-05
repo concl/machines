@@ -1,2 +1,3 @@
 
-from numpy_autograd import *
+from autograd import Tensor
+

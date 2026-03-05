@@ -1,6 +1,6 @@
 
 import numpy as np
-import machine_learning.numpy_autograd.numpy_autograd as autograd
+import autograd
 
 
 class Module:
@@ -23,20 +23,31 @@ class Linear(Module):
         self.parameters.extend([self.W, self.b])
     
     def forward(self, x):
-        return autograd.MatMul.apply(x, self.W) + self.b
+        return autograd.matmul(x, self.W) + self.b
     
+class ReLU(Module):
+    def forward(self, x):
+        ctx = autograd.AutogradContext()
+        output = autograd.ReLUFunction.forward(ctx, x.data)
 
+
+        return output
 
 class FFN(Module):
     def __init__(self, in_features, hidden_features, out_features):
         super().__init__()
         self.linear1 = Linear(in_features, hidden_features)
-        self.linear2 = Linear(hidden_features, out_features)
+        self.linear2 = Linear(hidden_features, hidden_features)
+        self.linear3 = Linear(hidden_features, out_features)
+
         self.parameters.extend(self.linear1.parameters)
         self.parameters.extend(self.linear2.parameters)
+        self.parameters.extend(self.linear3.parameters)
     
     def forward(self, x):
         x = self.linear1(x)
         x = autograd.ReLU.apply(x)
         x = self.linear2(x)
+        x = autograd.ReLU.apply(x)
+        x = self.linear3(x)
         return x
