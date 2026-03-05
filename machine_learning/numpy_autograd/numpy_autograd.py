@@ -82,8 +82,9 @@ class ReLU(AutogradFunction):
     @staticmethod
     def backward(ctx, grad_output):
         x, = ctx.saved_tensors
-        grad_input = grad_output * (x > 0).astype(x.dtype)
-        return grad_input
+        grad = grad_output * (x > 0).astype(x.dtype)
+        return grad
+
 
 class CrossEntropyLoss(AutogradFunction):
     @staticmethod
@@ -117,7 +118,7 @@ class AutogradContext:
         self.saved_tensors = tensors
 
 
-class Node:
+class AutogradNode:
     """A node in the autograd computation graph. 
     Each node wraps an AutoGradFunction and holds the context 
     and references to input tensors for backward traversal."""
@@ -140,8 +141,8 @@ class Tensor:
     """A wrapper around numpy arrays that tracks the computation graph
     for automatic differentiation."""
 
-    def __init__(self, data, requires_grad=False, grad_fn: Node = None):
-        self.data = np.array(data, dtype=np.float64)
+    def __init__(self, data, requires_grad=False, grad_fn: AutogradNode = None, dtype=np.float32):
+        self.data = np.array(data, dtype=dtype)
         self.requires_grad = requires_grad
         self.grad = None            # Accumulated gradient
         self.grad_fn = grad_fn      # Node that produced this tensor (None for leaves)
