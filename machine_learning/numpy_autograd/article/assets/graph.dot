@@ -1,0 +1,54 @@
+digraph computational_graph {
+
+    rankdir=LR;
+
+    // global node style
+    node [
+        shape=box,
+        style="filled,rounded",
+        fontname="Helvetica",
+        fontsize=12,
+        color=none
+    ];
+    edge [color="#555555", arrowsize=0.7];
+    graph [pad=0.2, nodesep=0.4, ranksep=0.8];
+
+    { rank=same; input; w1; b1 }
+    { rank=same; relu; w2; b2 }
+
+    // tensors (light blue)
+    input   [label="Input", fillcolor="#cfe8ff"];
+    label   [label="Label", fillcolor="#cfe8ff"];
+    w1      [label="Weight 1", fillcolor="#cfe8ff"];
+    b1      [label="Bias 1", fillcolor="#cfe8ff"];
+    w2      [label="Weight 2", fillcolor="#cfe8ff"];
+    b2      [label="Bias 2", fillcolor="#cfe8ff"];
+    loss    [label="Loss", fillcolor="#cfe8ff"];
+
+    // operations (orange)
+    matmul1   [label="MatMul", fillcolor="#ffd8a8"];
+    add1      [label="Add", fillcolor="#ffd8a8"];
+    relu      [label="ReLU", fillcolor="#ffd8a8"];
+    matmul2   [label="MatMul", fillcolor="#ffd8a8"];
+    add2      [label="Add", fillcolor="#ffd8a8"];
+    criterion [label="Criterion", fillcolor="#ffd8a8"];
+
+    // graph connections
+    input -> matmul1;
+    w1 -> matmul1;
+
+    matmul1 -> add1;
+    b1 -> add1;
+
+    add1 -> relu;
+    relu -> matmul2;
+    w2 -> matmul2;
+
+    matmul2 -> add2;
+    b2 -> add2;
+
+    add2 -> criterion;
+    label -> criterion;
+
+    criterion -> loss;
+}
