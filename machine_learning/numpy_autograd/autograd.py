@@ -74,6 +74,9 @@ class MatMul(AutogradFunction):
         return grad_a, grad_b
     
 class ReLUFunction(AutogradFunction):
+    """ReLU activation function with autograd support.
+    Should be used as a module for abstraction."""
+
     @staticmethod
     def forward(ctx, x):
         ctx.save_for_backward(x)
@@ -87,6 +90,8 @@ class ReLUFunction(AutogradFunction):
 
 
 class CrossEntropyLossFunction(AutogradFunction):
+    """Cross-entropy loss function with autograd support.
+    Should be used as a module for abstraction."""
     @staticmethod
     def forward(ctx, logits, labels):
         # Compute softmax probabilities
