@@ -24,14 +24,6 @@ class Linear(Module):
     
     def forward(self, x):
         return autograd.matmul(x, self.W) + self.b
-    
-class ReLU(Module):
-    def forward(self, x):
-        ctx = autograd.AutogradContext()
-        output = autograd.ReLUFunction.forward(ctx, x.data)
-
-
-        return output
 
 class FFN(Module):
     def __init__(self, in_features, hidden_features, out_features):
@@ -46,8 +38,8 @@ class FFN(Module):
     
     def forward(self, x):
         x = self.linear1(x)
-        x = autograd.ReLU.apply(x)
+        x = autograd.relu(x)
         x = self.linear2(x)
-        x = autograd.ReLU.apply(x)
+        x = autograd.relu(x)
         x = self.linear3(x)
         return x

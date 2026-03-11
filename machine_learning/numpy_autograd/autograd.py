@@ -1,6 +1,8 @@
 
 import numpy as np
 
+# ----- Helper functions -----
+
 def unbroadcast(grad: np.ndarray, target_shape: tuple) -> np.ndarray:
     """Sum grad over axes that were broadcasted to match target_shape."""
     while len(grad.shape) > len(target_shape):
@@ -20,6 +22,8 @@ class AutogradFunction:
     def backward(ctx, grad_output):
         raise NotImplementedError
 
+
+# ----- Autograd functions for basic operations -----
 
 class AddFunction(AutogradFunction):
     @staticmethod
@@ -51,7 +55,7 @@ class MulFunction(AutogradFunction):
 
         return grad_output_a, grad_output_b
     
-class MatMul(AutogradFunction):
+class MatMulFunction(AutogradFunction):
     @staticmethod
     def forward(ctx, a, b):
         ctx.save_for_backward(a, b)
@@ -74,8 +78,10 @@ class MatMul(AutogradFunction):
         return grad_a, grad_b
     
 class ReLUFunction(AutogradFunction):
-    """ReLU activation function with autograd support.
-    Should be used as a module for abstraction."""
+    """
+    ReLU activation function with autograd support.
+    Should be used as a module for abstraction.
+    """
 
     @staticmethod
     def forward(ctx, x):
@@ -88,10 +94,25 @@ class ReLUFunction(AutogradFunction):
         grad = grad_output * (x > 0).astype(x.dtype)
         return grad
 
+class SoftmaxFunction(AutogradFunction):
+    @staticmethod
+    def forward(ctx, x):
+        exp_x = np.exp(x - np.max(x, axis=-1, keepdims=True))
+        softmax = exp_x / np.sum(exp_x, axis=-1, keepdims=True)
+        ctx.save_for_backward(softmax)
+        return softmax
+    
+    @staticmethod
+    def backward(ctx, grad_output):
+        softmax, = ctx.saved_tensors
+        grad_input = softmax * (grad_output - np.sum(grad_output * softmax, axis=-1, keepdims=True))
+        return grad_input
 
 class CrossEntropyLossFunction(AutogradFunction):
-    """Cross-entropy loss function with autograd support.
-    Should be used as a module for abstraction."""
+    """
+    Cross-entropy loss function with autograd support.
+    Should be used as a module for abstraction.
+    """
     @staticmethod
     def forward(ctx, logits, labels):
         # Compute softmax probabilities
@@ -115,6 +136,8 @@ class CrossEntropyLossFunction(AutogradFunction):
         
         return grad_logits, None  # No gradient for labels
 
+# ----- Autograd graph classes -----
+
 class AutogradContext:
     def __init__(self):
         self.saved_tensors = None
@@ -124,9 +147,11 @@ class AutogradContext:
 
 
 class AutogradNode:
-    """A node in the autograd computation graph. 
+    """
+    A node in the autograd computation graph. 
     Each node wraps an AutoGradFunction and holds the context 
-    and references to input tensors for backward traversal."""
+    and references to input tensors for backward traversal.
+    """
 
     def __init__(self, function: AutogradFunction, ctx: AutogradContext, inputs: list):
         self.function = function    # The AutogradFunction class (e.g. AddFunction)
@@ -141,11 +166,13 @@ class AutogradNode:
         
         return grad_output
 
-
+# ----- Tensor class -----
 
 class Tensor:
-    """A wrapper around numpy arrays that tracks the computation graph
-    for automatic differentiation."""
+    """
+    A wrapper around numpy arrays that tracks the computation graph
+    for automatic differentiation.
+    """
 
     def __init__(self, data, requires_grad=False, grad_fn: AutogradNode = None, dtype=np.float32):
         self.data = np.array(data, dtype=dtype)
@@ -196,8 +223,29 @@ class Tensor:
         return Tensor(self.data[key], requires_grad=self.requires_grad)
 
 
+# ----- Autograd function wrappers for user-friendly API -----
+
 def matmul(a: Tensor, b: Tensor) -> Tensor:
     ctx = AutogradContext()
-    result_data = MatMul.forward(ctx, a.data, b.data)
-    grad_fn = AutogradNode(MatMul, ctx, [a, b])
+    result_data = MatMulFunction.forward(ctx, a.data, b.data)
+    grad_fn = AutogradNode(MatMulFunction, ctx, [a, b])
     return Tensor(result_data, requires_grad=a.requires_grad or b.requires_grad, grad_fn=grad_fn)
+
+def relu(x: Tensor) -> Tensor:
+    ctx = AutogradContext()
+    result_data = ReLUFunction.forward(ctx, x.data)
+    grad_fn = AutogradNode(ReLUFunction, ctx, [x])
+    return Tensor(result_data, requires_grad=x.requires_grad, grad_fn=grad_fn)
+
+def softmax(x: Tensor) -> Tensor:
+    ctx = AutogradContext()
+    result_data = SoftmaxFunction.forward(ctx, x.data)
+    grad_fn = AutogradNode(SoftmaxFunction, ctx, [x])
+    return Tensor(result_data, requires_grad=x.requires_grad, grad_fn=grad_fn)
+
+def cross_entropy_loss(logits: Tensor, labels: Tensor) -> Tensor:
+    ctx = AutogradContext()
+    loss_data = CrossEntropyLossFunction.forward(ctx, logits.data, labels.data)
+    grad_fn = AutogradNode(CrossEntropyLossFunction, ctx, [logits, labels])
+    return Tensor(loss_data, requires_grad=logits.requires_grad, grad_fn=grad_fn)
+
