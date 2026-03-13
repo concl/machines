@@ -22,7 +22,7 @@
 \maketitle
 
 \section{Introduction}
-In this article, we will implement a simple autograd system in NumPy. Autograd is a technique for automatically computing gradients of functions, which is essential for training machine learning models without manually deriving gradients. We will define a class for tensors that can track operations and compute gradients, as well as some basic operations like addition and matrix multiplication. We will also implement a simple ReLU activation function and demonstrate how to use our autograd system to compute gradients for a simple neural network.
+In this article, we will implement a simple autograd system in NumPy from scratch. Autograd is a technique for automatically computing gradients of functions, which is essential for training machine learning models without manually deriving gradients. We will define a class for tensors that can track operations and compute gradients, as well as some basic operations like addition and matrix multiplication. We will also implement a simple ReLU activation function and demonstrate how to use our autograd system to compute gradients for a simple neural network.
 
 \section{Autograd Implementation}
 The fundamental data structure in our autograd system will be the \texttt{Tensor} class. This class stores data (in a NumPy array) and tracks the operation that created it.
