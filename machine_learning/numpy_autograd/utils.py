@@ -36,7 +36,7 @@ class DataLoader:
             np.random.shuffle(self.indices)
         for start in range(0, len(self.dataset), self.batch_size):
             batch_indices = self.indices[start : start + self.batch_size]
-            batch = [self.dataset[idx] for idx in batch_indices]
+            batch = [self.dataset[int(idx)] for idx in batch_indices]
             if self.collate_fn:
                 yield self.collate_fn(batch)
             else:
