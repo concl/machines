@@ -13,6 +13,16 @@ class Trainer:
         self.args = args or TrainingArguments()
 
     def train(self, train_loader, valid_loader=None):
+        """
+        Trains the model on the provided training data and optionally evaluates on validation data.
+        Note that the original model parameters are modified in-place during training.
+
+        Args:
+            train_loader (DataLoader): DataLoader for the training dataset
+            valid_loader (DataLoader, optional): DataLoader for the validation dataset. Defaults to None.
+        Returns:
+            dict: A dictionary containing the trained model, training losses, and validation losses.
+        """
 
         device = self.args.device or ("cuda" if torch.cuda.is_available() else "cpu")
         self.model.to(device)
