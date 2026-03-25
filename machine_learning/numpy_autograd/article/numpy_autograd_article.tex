@@ -143,6 +143,16 @@ We can define various functions and operations that our autograd system will sup
     \frac{\partial L}{\partial P_i} = -\frac{Y_i}{P_i}
 \]
 
+\subsubsection{Softmax}
+\textbf{Forward.} Given input $Z$,
+\[
+    P_i = \frac{e^{Z_i}}{\sum_j e^{Z_j}}
+\]
+\textbf{Backward.} Let $\bar{P} = \dfrac{\partial L}{\partial P}$ be the upstream gradient. By the chain rule,
+\[
+    \frac{\partial L}{\partial Z_i} = \sum_j \frac{\partial L}{\partial P_j} \cdot \frac{\partial P_j}{\partial Z_i}
+\]
+
 Note that in practice, we often combine the softmax function with the cross-entropy loss for numerical stability, which leads to a simplified backward pass.
 
 Now that we have defined the forward and backward passes for our operations, we can implement the \texttt{Tensor} class to track these operations and compute gradients automatically. The \texttt{Tensor} class will store the data, the gradient, and a reference to the function that created it (if any). During the backward pass, we will recursively call the backward functions of each operation in the computational graph to compute gradients for all tensors.
