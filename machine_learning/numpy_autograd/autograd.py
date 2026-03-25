@@ -14,6 +14,9 @@ def unbroadcast(grad: np.ndarray, target_shape: tuple) -> np.ndarray:
     return grad
 
 
+# ----- Autograd functions for basic operations -----
+
+
 class AutogradFunction:
     @staticmethod
     def forward(ctx, *args):
@@ -22,9 +25,6 @@ class AutogradFunction:
     @staticmethod
     def backward(ctx, grad_output):
         raise NotImplementedError
-
-
-# ----- Autograd functions for basic operations -----
 
 
 class AddFunction(AutogradFunction):
