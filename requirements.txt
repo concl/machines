@@ -19,5 +19,6 @@ jupyter
 jupyterlab
 scikit-learn
 optuna
+kaggle
 
 
