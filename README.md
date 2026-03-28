@@ -15,6 +15,17 @@ Then run the following command to install the dependencies
 pip install -r requirements.txt
 ```
 
+## Using uv
+
+Run the following:
+```
+uv init
+```
+Then run:
+```
+uv sync
+```
+
 ## Useful resources and documentation:
 
 - PyTorch: https://docs.pytorch.org/docs/stable/pytorch-api.html 
