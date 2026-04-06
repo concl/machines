@@ -1,4 +1,4 @@
-from template import *
+from templates.template import *
 from dataclasses import dataclass
 
 
