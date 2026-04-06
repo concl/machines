@@ -3,6 +3,7 @@
 .cache/
 .kaggle/
 data/
+tmp/
 trash/
 debug/
 workspace/
