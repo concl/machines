@@ -134,6 +134,8 @@ class Logger:
         return out
 
 
+products = ["INTARIAN_PEPPER_ROOT", "ASH_COATED_OSMIUM"]
+
 logger = Logger()
 
 class Trader:
