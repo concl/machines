@@ -168,12 +168,12 @@ class Trader:
                     print(f"PLACING BUY ORDER AT {my_buy_price}")
                     orders.append(Order(product, my_buy_price, min(20,80-position))) # Positive
                 
-                # elif product=="ASH_COATED_OSMIUM":
-                #     print(f"PLACING BUY ORDER AT {my_buy_price}")
-                #     orders.append(Order(product, my_buy_price, min(20,80-position))) # Positive for BUY
+                elif product=="ASH_COATED_OSMIUM":
+                    print(f"PLACING BUY ORDER AT {min(my_buy_price, 10000)}")
+                    orders.append(Order(product, my_buy_price, min(20,80-position))) # Positive for BUY
                     
-                #     print(f"PLACING SELL ORDER AT {my_sell_price}")
-                #     orders.append(Order(product, my_sell_price, max(-20,-80-position))) # Negative for SELL
+                    print(f"PLACING SELL ORDER AT {max(my_sell_price, 10000)}")
+                    orders.append(Order(product, my_sell_price, max(-20,-80-position))) # Negative for SELL
                 
             result[product] = orders
     
