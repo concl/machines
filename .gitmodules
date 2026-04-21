@@ -1,0 +1,3 @@
+[submodule "machine_learning/numpy_autograd"]
+	path = machine_learning/numpy_autograd
+	url = https://github.com/concl/numpy_autograd.git
