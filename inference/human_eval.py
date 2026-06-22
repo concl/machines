@@ -24,9 +24,6 @@ class HumanEvalProblem:
             with open(temp_file, "w") as f:
                 f.write(code)
             
-            # sandbox the execution
-            
-            
             # Execute the code in a subprocess
             result = subprocess.run(
                 [sys.executable, temp_file],
