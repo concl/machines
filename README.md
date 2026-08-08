@@ -1,5 +1,5 @@
 # machines
-Implementations of topics in machine learning.
+Machine learning
 
 ## Creating a venv with the correct dependencies
 
